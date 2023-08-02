@@ -1,13 +1,6 @@
 import {makeAutoObservable} from "mobx"
 
 class ConfigStore {
-    _rotateXY = false
-    _rotateXZ = false
-    _rotateXW = false
-    _rotateYZ = false
-    _rotateYW = false
-    _rotateZW = false
-
     _angleXY = 0
     _angleXZ = 0
     _angleXW = 0
@@ -20,54 +13,6 @@ class ConfigStore {
 
     constructor() {
         makeAutoObservable(this)
-    }
-
-    get rotateXY() {
-        return this._rotateXY;
-    }
-
-    setRotateXY(value) {
-        this._rotateXY = value;
-    }
-
-    get rotateXZ() {
-        return this._rotateXZ;
-    }
-
-    setRotateXZ(value) {
-        this._rotateXZ = value;
-    }
-
-    get rotateXW() {
-        return this._rotateXW;
-    }
-
-    setRotateXW(value) {
-        this._rotateXW = value;
-    }
-
-    get rotateYZ() {
-        return this._rotateYZ;
-    }
-
-    setRotateYZ(value) {
-        this._rotateYZ = value;
-    }
-
-    get rotateYW() {
-        return this._rotateYW;
-    }
-
-    setRotateYW(value) {
-        this._rotateYW = value;
-    }
-
-    get rotateZW() {
-        return this._rotateZW;
-    }
-
-    setRotateZW(value) {
-        this._rotateZW = value;
     }
 
     get angleXY() {
