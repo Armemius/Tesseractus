@@ -4,7 +4,7 @@ import {ConfigStoreContext} from "../main.jsx"
 import useWindowSize from "../hooks/useWindowSize.js"
 import axios from "axios"
 import {observer} from "mobx-react-lite";
-import {AXIS, PLANE_COLORS, TESSERACT_PLANES} from "../util/tesseract.js";
+import {PLANE_COLORS, TESSERACT_PLANES, TEXTURE_COORDINATES} from "../util/tesseract.js";
 
 const Canvas = () => {
     const canvasRef = useRef(null)
@@ -39,6 +39,7 @@ const Canvas = () => {
 
             const positionAttributeLocation = gl.getAttribLocation(program, 'a_position')
             const colorAttributeLocation = gl.getAttribLocation(program, 'a_color')
+            const texcoordAttributeLocation = gl.getAttribLocation(program, 'a_texcoord')
             const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution')
             const rotateXYUniformLocation = gl.getUniformLocation(program, 'u_rotate_xy')
             const rotateXZUniformLocation = gl.getUniformLocation(program, 'u_rotate_xz')
@@ -46,6 +47,22 @@ const Canvas = () => {
             const rotateYZUniformLocation = gl.getUniformLocation(program, 'u_rotate_yz')
             const rotateYWUniformLocation = gl.getUniformLocation(program, 'u_rotate_yw')
             const rotateZWUniformLocation = gl.getUniformLocation(program, 'u_rotate_zw')
+            const useTextureUniformLocation = gl.getUniformLocation(program, 'u_use_texture')
+
+            const texture = gl.createTexture();
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+                new Uint8Array([255, 0, 0, 10]));
+
+            const image = new Image();
+            image.src = "/texture.png";
+
+            image.onload = () => {
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA,gl.UNSIGNED_BYTE, image);
+                gl.generateMipmap(gl.TEXTURE_2D);
+            }
 
             setLocations({
                 attributePosition: positionAttributeLocation,
@@ -56,7 +73,9 @@ const Canvas = () => {
                 rotateXWUniform: rotateXWUniformLocation,
                 rotateYZUniform: rotateYZUniformLocation,
                 rotateYWUniform: rotateYWUniformLocation,
-                rotateZWUniform: rotateZWUniformLocation
+                rotateZWUniform: rotateZWUniformLocation,
+                useTextureUniform: useTextureUniformLocation,
+                texcoordAttribute: texcoordAttributeLocation
             })
 
             gl.useProgram(program)
@@ -74,6 +93,7 @@ const Canvas = () => {
 
         // Helper functions
         const drawTesseractWireframe = (gl, positions, color) => {
+            gl.uniform1i(locations.useTextureUniform, 0)
             const positionBuffer = gl.createBuffer()
             gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.DYNAMIC_DRAW)
@@ -98,6 +118,7 @@ const Canvas = () => {
         }
 
         const drawTesseractPlane = (gl, positions, color) => {
+            gl.uniform1i(locations.useTextureUniform, config.useTexture)
             const positionBuffer = gl.createBuffer()
             gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 
@@ -118,6 +139,12 @@ const Canvas = () => {
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.DYNAMIC_DRAW)
             gl.enableVertexAttribArray(locations.attributeColor)
             gl.vertexAttribPointer(locations.attributeColor, 4, gl.FLOAT, false, 0, 0)
+
+            const texCoordBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer)
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(TEXTURE_COORDINATES), gl.DYNAMIC_DRAW)
+            gl.enableVertexAttribArray(locations.texcoordAttribute)
+            gl.vertexAttribPointer(locations.texcoordAttribute, 2, gl.FLOAT, false, 0, 0)
             gl.drawArrays(gl.TRIANGLES, 0, 6)
         }
 
@@ -134,22 +161,27 @@ const Canvas = () => {
         // Actual render
         gl.viewport(0, 0, width, height)
         reloadUniform()
+        gl.clearColor(0, 0, 0, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
         gl.enable(gl.BLEND)
         gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE_MINUS_CONSTANT_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-        gl.clearColor(0, 0, 0, 1)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-        AXIS.forEach((points, it) => {
-            drawTesseractWireframe(gl, points, [...PLANE_COLORS[it % 6], 1])
-        })
-        TESSERACT_PLANES.forEach((points, it) => {
-            //drawTesseractPlane(gl, points, [...PLANE_COLORS[it % 6], 0.5])
-        })
-        TESSERACT_PLANES.forEach(points => {
-            drawTesseractWireframe(gl, points)
-        })
-    }, [config.angleXW, config.angleXY, config.angleXZ, config.angleYW, config.angleYZ, config.angleZW, height, locations, program, width])
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        if (!config.hideFaces) {
+            TESSERACT_PLANES.forEach((points, it) => {
+                const ss = 1
+                if (it < ss * 2) {
+                    return
+                }
+                drawTesseractPlane(gl, points, [...PLANE_COLORS[it], 0.08])
+            })
+        }
+        if (!config.hideEdges) {
+            TESSERACT_PLANES.forEach(points => {
+                drawTesseractWireframe(gl, points)
+            })
+        }
+    }, [config.angleXW, config.angleXY, config.angleXZ, config.angleYW, config.angleYZ, config.angleZW, config.hideEdges, config.hideFaces, config.useTexture, height, locations, program, width])
 
     return (
         <>

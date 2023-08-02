@@ -2,14 +2,16 @@ import {makeAutoObservable} from "mobx"
 
 class ConfigStore {
     _angleXY = 0
-    _angleXZ = 0
+    _angleXZ = 5.86431
     _angleXW = 0
-    _angleYZ = 0
+    _angleYZ = 0.15708
     _angleYW = 0
     _angleZW = 0
 
     _isPerspective = true
-    _hideAxis = false
+    _hideEdges = false
+    _hideFaces = false
+    _useTexture = false
 
     constructor() {
         makeAutoObservable(this)
@@ -71,12 +73,28 @@ class ConfigStore {
         this._isPerspective = value;
     }
 
-    get hideAxis() {
-        return this._hideAxis;
+    get hideEdges() {
+        return this._hideEdges;
     }
 
-    setHideAxis(value) {
-        this._hideAxis = value;
+    setHideEdges(value) {
+        this._hideEdges = value;
+    }
+
+    get hideFaces() {
+        return this._hideFaces;
+    }
+
+    setHideFaces(value) {
+        this._hideFaces = value;
+    }
+
+    get useTexture() {
+        return this._useTexture;
+    }
+
+    setUseTexture(value) {
+        this._useTexture = value;
     }
 }
 

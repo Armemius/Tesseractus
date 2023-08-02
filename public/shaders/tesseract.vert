@@ -4,6 +4,7 @@ precision mediump float;
 
 attribute vec4 a_position;
 attribute vec4 a_color;
+attribute vec2 a_texcoord;
 
 uniform vec2 u_resolution;
 
@@ -15,6 +16,7 @@ uniform float u_rotate_yw;
 uniform float u_rotate_zw;
 
 varying vec4 v_color;
+varying vec2 v_texcoord;
 
 mat4 gen_4d_projection_p(float LW, float W) {
     return mat4(
@@ -27,8 +29,8 @@ mat4 gen_4d_projection_p(float LW, float W) {
 
 mat3 gen_3d_projection_p(float LZ, float Z) {
     return mat3(
-        1.0 / (LZ + Z), 0.0, 0.0,
-        0.0, 1.0 / (LZ + Z), 0.0,
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
         0.0, 0.0, 0.0
     );
 }
@@ -74,11 +76,15 @@ void main() {
     vec3 projected_4d = (gen_4d_projection_p(LW, uv.w) * uv).xyz;
     vec2 projected_3d = (gen_3d_projection_p(LW,  projected_4d.z) * projected_4d).xy;
 
-    v_color = a_color;
-    gl_Position = vec4(
+    vec4 res = vec4(
         projected_3d.x * u_resolution.y / u_resolution.x,
         projected_3d.y,
         0.0,
         1.0
     );
+
+    v_color = a_color;
+    v_texcoord = a_texcoord;
+
+    gl_Position = res;
 }

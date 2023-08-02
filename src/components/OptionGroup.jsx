@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 const OptionGroup = props => {
     return (
         <div className="config-option-group">
-            <div className="config-menu-header">{props.name}</div>
+            <div className="menu-header">{props.name}</div>
             {props.children}
         </div>
     );
