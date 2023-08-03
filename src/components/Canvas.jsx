@@ -56,7 +56,7 @@ const Canvas = () => {
                 new Uint8Array([255, 0, 0, 10]));
 
             const image = new Image();
-            image.src = "/texture.png";
+            image.src = "/tesseractus/texture.png";
 
             image.onload = () => {
                 gl.bindTexture(gl.TEXTURE_2D, texture);

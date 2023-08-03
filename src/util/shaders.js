@@ -1,5 +1,5 @@
-export const VERTEX_SHADER_PATH = "/shaders/tesseract.vert"
-export const FRAGMENT_SHADER_PATH = "/shaders/tesseract.frag"
+export const VERTEX_SHADER_PATH = "/tesseractus/shaders/tesseract.vert"
+export const FRAGMENT_SHADER_PATH = "/tesseractus/shaders/tesseract.frag"
 
 export function createShader(gl, type, source) {
     const shader = gl.createShader(type)
